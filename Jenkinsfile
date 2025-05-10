@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        AWS_REGION = 'il-central'                  // Use your region
+        AWS_REGION = 'il-central-1'                  // Use your region
         LAMBDA_NAME = 'oleg-self-updating'         // Use your LAMBDA name
         ZIP_FILE = 'lambda_package.zip'            
     }
