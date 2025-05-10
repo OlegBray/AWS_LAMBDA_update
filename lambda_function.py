@@ -9,7 +9,7 @@ LOOK_FOR_ID = "oleg"
 def lambda_handler(event, context):
     try:
         # Accept ID from input event, default to 'oleg' if not provided
-        item_id = event.get("id", {LOOK_FOR_ID})
+        item_id = event.get("id", LOOK_FOR_ID)
         
         response = table.get_item(Key={'id': item_id})
         
