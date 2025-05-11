@@ -1,5 +1,5 @@
 provider "aws" {
-  region = "il-central-1"
+  region = "il-central-1"  # adjust if needed
 }
 
 # IAM Role for Lambda
@@ -47,12 +47,12 @@ resource "aws_lambda_function" "oleg_lambda" {
   source_code_hash = filebase64sha256("lambda.zip")
 }
 
-# Existing API Gateway lookup
+# Lookup existing API Gateway by name
 data "aws_api_gateway_rest_api" "imtech_api" {
   name = "imtech"
 }
 
-# Create resource /oleg-tf-lambda
+# Create the /oleg-tf-lambda resource
 resource "aws_api_gateway_resource" "lambda_resource" {
   rest_api_id = data.aws_api_gateway_rest_api.imtech_api.id
   parent_id   = data.aws_api_gateway_rest_api.imtech_api.root_resource_id
@@ -85,11 +85,15 @@ resource "aws_lambda_permission" "api_gateway" {
   source_arn    = "${data.aws_api_gateway_rest_api.imtech_api.execution_arn}/*/*"
 }
 
-# Deployment without deprecated stage_name
+# Deployment: no stage_name, so Terraform won't manage stages implicitly
 resource "aws_api_gateway_deployment" "deployment" {
-  depends_on = [aws_api_gateway_integration.lambda_integration]
+  depends_on = [
+    aws_api_gateway_integration.lambda_integration
+  ]
+
   rest_api_id = data.aws_api_gateway_rest_api.imtech_api.id
 
+  # Force a new deployment whenever the API changes
   triggers = {
     redeployment = sha1(jsonencode([
       aws_api_gateway_resource.lambda_resource.id,
@@ -103,11 +107,11 @@ resource "aws_api_gateway_deployment" "deployment" {
   }
 }
 
-# Explicitly manage the default stage
+# Adopt and manage the existing "default" stage
 resource "aws_api_gateway_stage" "default_stage" {
   rest_api_id   = data.aws_api_gateway_rest_api.imtech_api.id
   stage_name    = "default"
   deployment_id = aws_api_gateway_deployment.deployment.id
 
-  description = "Managed default stage by Terraform"
+  description = "Terraform-managed default stage"
 }
