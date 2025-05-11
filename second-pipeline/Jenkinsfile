@@ -25,7 +25,7 @@ pipeline {
             aws lambda update-function-code \
               --function-name oleg-tf-lambda \
               --zip-file fileb://lambda.zip \
-              --region us-east-1
+              --region il-central-1
           """
         }
       }
