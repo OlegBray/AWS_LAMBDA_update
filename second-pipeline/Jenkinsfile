@@ -1,39 +1,31 @@
 pipeline {
   agent any
 
-  environment {
-    AWS_REGION = 'us-east-1'
-    FUNCTION_NAME = 'oleg-tf-lambda'
-  }
-
   stages {
-    stage('Zip Lambda Code') {
+    stage('Checkout') {
       steps {
-        sh 'ls'
-        sh 'cd second-pipeline'
-        sh 'zip lambda.zip lambda_function.py'
+        checkout scm
       }
     }
 
-    stage('Terraform Init & Apply') {
+    stage('Terraform & Zip') {
       steps {
-        withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'aws-creds']]) {
-          sh '''
-            terraform init
-            terraform apply -auto-approve
-          '''
+        dir('second-pipeline') {
+          sh 'zip lambda.zip lambda_function.py'
+          sh 'terraform init'
+          sh 'terraform apply -auto-approve'
         }
       }
     }
 
-    stage('Update Lambda Code') {
+    stage('Update Lambda') {
       steps {
-        withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'aws-creds']]) {
+        dir('second-pipeline') {
           sh """
             aws lambda update-function-code \
-              --function-name ${FUNCTION_NAME} \
+              --function-name oleg-tf-lambda \
               --zip-file fileb://lambda.zip \
-              --region ${AWS_REGION}
+              --region us-east-1
           """
         }
       }
