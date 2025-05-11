@@ -13,6 +13,7 @@ pipeline {
         dir('second-pipeline') {
           sh 'zip lambda.zip lambda_function.py'
           sh 'terraform init'
+          sh 'terraform import aws_api_gateway_stage.default_stage mj92zct6nc/default'
           sh 'terraform apply -auto-approve'
         }
       }
