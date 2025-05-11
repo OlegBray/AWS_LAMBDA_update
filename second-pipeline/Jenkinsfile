@@ -9,9 +9,7 @@ pipeline {
   stages {
     stage('Zip Lambda Code') {
       steps {
-        sh 'pwd'
-        sh 'cd second-pipeline'
-        sh 'pwd'
+        sh 'ls'
         sh 'zip lambda.zip lambda_function.py'
       }
     }
